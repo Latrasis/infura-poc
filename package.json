@@ -4,10 +4,16 @@
     "install": "cd app && npm install",
     "test": "hardhat test",
     "deploy_escrow": "hardhat run ./scripts/deploy.ts",
-    "serve": "cd app && npm run dev"
+    "app": "cd app && npm run dev",
+    "server": "ts-node ./server/index.ts"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
     "hardhat": "^2.20.1"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.1",
+    "dotenv": "^16.4.5",
+    "opensea-js": "^7.0.9"
   }
 }

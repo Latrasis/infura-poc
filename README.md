@@ -3,13 +3,13 @@ This project demonstrates a basic implementation of an Nft Escrow App
 
 # Instructions
 ```shell
+    npm install
     # Deploy Escrow
-    npm i
-    npm run deploy
-    # Run App
-    npm i ./app
-    npm run app
+    npm run deploy_escrow
+    # Serve App
+    npm run serve
 ```
+
 Try running some of the following tasks:
 
 ```shell
