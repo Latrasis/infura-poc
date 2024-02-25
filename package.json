@@ -1,0 +1,13 @@
+{
+  "name": "consensys_poc",
+  "scripts": {
+    "install": "cd app && npm install",
+    "test": "hardhat test",
+    "deploy_escrow": "hardhat run ./scripts/deploy.ts",
+    "serve": "cd app && npm run dev"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "hardhat": "^2.20.1"
+  }
+}
