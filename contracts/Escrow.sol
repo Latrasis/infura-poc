@@ -3,14 +3,16 @@ pragma solidity ^0.8.24;
 
 // Uncomment this line to use console.log
 // import "hardhat/console.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 contract Escrow is Ownable(msg.sender), IERC721Receiver {
     using SafeERC20 for IERC20;
+    using EnumerableSet for EnumerableSet.UintSet;
 
     struct TokenLoan {
         bool exists;
@@ -21,16 +23,27 @@ contract Escrow is Ownable(msg.sender), IERC721Receiver {
     struct TokenVault {
         uint128 totalLoan;
         mapping (uint256 tokenId => TokenLoan) loanOf;
+        EnumerableSet.UintSet tokens;
+
     }
     struct NftVault {
         mapping ( address owner => TokenVault) list;
     }
 
-    mapping (address nft => NftVault vault) _vault;
+    struct LoanReview {
+         address nft;
+        uint256 tokenId;
+        address spender;
+        address token;
+        uint128 value;
+    }
 
+    mapping (address nft => NftVault vault) internal _vault;
+
+    event onReview();
     event onERC721Transfer(
-        address nft,
-        address operator,
+        address indexed nft,
+        address indexed operator,
         address from,
         uint256 tokenId,
         bytes data
@@ -42,21 +55,34 @@ contract Escrow is Ownable(msg.sender), IERC721Receiver {
         IERC20(token).safeIncreaseAllowance(spender, value);
     }
 
-    function _reviewLoan(
-        address nft,
-        uint256 tokenId,
-        address spender,
-        address token,
-        uint128 value
-    ) onlyOwner public {
-        TokenVault storage s = _vault[nft].list[spender];
-        TokenLoan storage t = s.loanOf[tokenId];
+    function loan(address nft, address owner, uint256 tokenId) view public returns (TokenLoan memory) {
+        return _vault[nft].list[owner].loanOf[tokenId];
+    }
 
-        t.loan = value;
-        t.token = token;
-        t.exists = true;
-        s.totalLoan += value;
-        IERC20(token).safeIncreaseAllowance(spender, value);
+    function totalLoan(address nft, address owner) view public returns (uint128 totalLoan) {
+        return _vault[nft].list[owner].totalLoan;
+    } 
+    
+    function lockedTokens(address nft, address owner) view public returns (uint256[] memory lockedIds) {
+        return _vault[nft].list[owner].tokens.values();
+    }
+
+    function _reviewLoans(LoanReview[] calldata loans) onlyOwner public {
+        for (uint256 i = 0; i < loans.length; i++) {
+            LoanReview calldata l = loans[i];
+
+            TokenVault storage s = _vault[l.nft].list[l.spender];
+            TokenLoan storage t = s.loanOf[l.tokenId];
+
+            t.loan = l.value;
+            t.token = l.token;
+            t.exists = true;
+            s.totalLoan += l.value;
+            s.tokens.add(l.tokenId);
+            
+            IERC20(l.token).safeIncreaseAllowance(l.spender, l.value);
+        }
+        emit onReview();
     }
 
     function withdraw(
@@ -74,6 +100,7 @@ contract Escrow is Ownable(msg.sender), IERC721Receiver {
         IERC721(nft).safeTransferFrom(address(this), msg.sender, tokenId);
         t.exists = false;
 
+        s.tokens.remove(tokenId);
         delete s.loanOf[tokenId];
     }
 

@@ -1,19 +1,29 @@
 {
   "name": "consensys_poc",
   "scripts": {
-    "install": "cd app && npm install",
+    "install": "npm run typechain && cp ./.env*.local app && cd app && npm install",
     "test": "hardhat test",
-    "deploy_escrow": "hardhat run ./scripts/deploy.ts",
-    "app": "cd app && npm run dev",
-    "server": "ts-node ./server/index.ts"
+    "deploy_escrow": "hardhat ignition deploy --network mainnet ignition/modules/Escrow.ts && cp -r ignition/deployments ./app/src/lib/deployments",
+    "deploy_nft": "hardhat ignition deploy --network mainnet ignition/modules/TestNft.ts && cp -r ignition/deployments ./app/src/lib/deployments",
+    "app": "cp ./.env*.local app && cd app && npm run dev & npm run server",
+    "server": "hardhat run ./scripts/server.ts",
+    "typechain": "hardhat typechain && cp -rf ./typechain-types ./app/src/lib/"
   },
   "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.0.5",
+    "@nomicfoundation/hardhat-ignition": "^0.14.0",
+    "@nomicfoundation/hardhat-ignition-ethers": "^0.14.0",
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
-    "hardhat": "^2.20.1"
-  },
-  "dependencies": {
+    "@nomicfoundation/hardhat-verify": "^2.0.4",
+    "@nomicfoundation/ignition-core": "^0.14.0",
     "@openzeppelin/contracts": "^5.0.1",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "ethers": "^6.11.1",
+    "express": "^4.18.2",
+    "hardhat": "^2.20.1",
     "opensea-js": "^7.0.9"
   }
 }
