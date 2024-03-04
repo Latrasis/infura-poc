@@ -3,9 +3,10 @@
   "scripts": {
     "install": "npm run typechain && cp ./.env*.local app && cd app && npm install",
     "test": "hardhat test",
+    "test_node": "hardhat node",
     "deploy_escrow": "hardhat ignition deploy --network mainnet ignition/modules/Escrow.ts && cp -r ignition/deployments ./app/src/lib/deployments",
     "deploy_nft": "hardhat ignition deploy --network mainnet ignition/modules/TestNft.ts && cp -r ignition/deployments ./app/src/lib/deployments",
-    "app": "cp ./.env*.local app && cd app && npm run dev & npm run server",
+    "app": "npm run server & npm run test_node & cp ./.env*.local app && cd app && npm run dev",
     "server": "hardhat run ./scripts/server.ts",
     "typechain": "hardhat typechain && cp -rf ./typechain-types ./app/src/lib/"
   },

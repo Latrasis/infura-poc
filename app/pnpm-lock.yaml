@@ -5,9 +5,6 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
-  '@local_contracts':
-    specifier: file:../typechain-types
-    version: file:../typechain-types
   '@metamask/detect-provider':
     specifier: ^2.0.0
     version: 2.0.0
@@ -35,12 +32,9 @@ dependencies:
   ethers:
     specifier: ^6.11.1
     version: 6.11.1
-  local_artifacts:
-    specifier: file:../artifacts
-    version: file:../artifacts
-  local_deployments:
-    specifier: file:../ignition/deployments
-    version: file:../ignition/deployments
+  immer:
+    specifier: ^10.0.3
+    version: 10.0.3
   lucide-react:
     specifier: ^0.343.0
     version: 0.343.0(react@18.2.0)
@@ -5477,6 +5471,10 @@ packages:
       queue: 6.0.2
     dev: false
 
+  /immer@10.0.3:
+    resolution: {integrity: sha512-pwupu3eWfouuaowscykeckFmVTpqbzW+rXFCX8rQLkZzM9ftBmU/++Ra+o+L27mz03zJTlyV4UUr+fdKNffo4A==}
+    dev: false
+
   /import-fresh@2.0.0:
     resolution: {integrity: sha512-eZ5H8rcgYazHbKC3PG4ClHNykCSxtAhxSSEM+2mb+7evD2CKF5V7c0dNum7AdpDh0ZdICwZY9sRSn8f+KH96sg==}
     engines: {node: '>=4'}
@@ -8438,18 +8436,3 @@ packages:
   /yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
-
-  file:../artifacts:
-    resolution: {directory: ../artifacts, type: directory}
-    name: artifacts
-    dev: false
-
-  file:../ignition/deployments:
-    resolution: {directory: ../ignition/deployments, type: directory}
-    name: deployments
-    dev: false
-
-  file:../typechain-types:
-    resolution: {directory: ../typechain-types, type: directory}
-    name: typechain-types
-    dev: false
