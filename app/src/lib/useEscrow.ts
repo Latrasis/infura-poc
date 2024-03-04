@@ -1,6 +1,6 @@
 import { AddressLike, ZeroAddress, ethers } from "ethers"
 
-import { Escrow__factory, Escrow, TestNft__factory, TestNft, SafeERC20__factory } from "./typechain-types"
+import { Escrow__factory, Escrow, TestNft__factory, TestNft, SafeERC20__factory, IERC20__factory } from "./typechain-types"
 
 import { useState } from "react"
 import { useSDK } from "@metamask/sdk-react"
@@ -24,21 +24,22 @@ export function useEscrow() {
 
   useEffect(() => {
     if (escrow && account && chainId) {
-      let provider = new ethers.BrowserProvider(window.ethereum!);
       let jsonRpcUrl = chainId == "0x539" ? "http://127.0.0.1:8545" : "http://127.0.0.1:4444/api/infura";
       let rpcProvider = new ethers.JsonRpcProvider(jsonRpcUrl)
       let e = Escrow__factory.connect(escrow, rpcProvider)
+
       e.addListener("onReview", async () => {
         for (let nft in nfts) {
           let lockedTokens = await e.lockedTokens(nft, account!)
-          for (let tokenId of lockedTokens) {
-            let tokenInfo = await e.loan(nft, account!, tokenId );
-            setNfts(
-              produce(draft => {
-                draft[nft].tokens[tokenId.toString()].loan = Number(tokenInfo.loan)
-              })
-            )
-          }
+          let updateLoans = await Promise.all(lockedTokens.map(async tokenId => [tokenId, await e.loan(nft, account!, tokenId)] as const))
+
+          setNfts(
+            produce(draft => {
+              for (let [tokenId, loan] of updateLoans) {
+                draft[nft].tokens[tokenId.toString()] = loan
+              }
+            })
+          )
         }
       })
       return () => { e.removeAllListeners() };
@@ -88,7 +89,15 @@ export function useEscrow() {
     let provider = new ethers.BrowserProvider(window.ethereum!);
     let signer = await provider.getSigner()
 
+    
+    
+    // Get Token Loan
     let e = Escrow__factory.connect(escrow!, signer)
+
+    let loanInfo = await e.loan(nftAddr, account!, tokenId)
+    let loanToken = IERC20__factory.connect(loanInfo.token, signer)
+    
+    await loanToken.approve(escrow!, loanInfo.loan)
     await e.withdraw(nftAddr, tokenId)
     let state = await e.loan(nftAddr, account!, tokenId)
 
